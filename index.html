@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="it" class="h-full bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guitar Intervals Master - Allenatore di Intervalli per Chitarra</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Font Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            fretboard: {
+              wood: '#1e140f',
+              fret: '#94a3b8',
+              string: '#cbd5e1',
+              marker: '#334155'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Fretboard texture and depth */
+    .fretboard-bg {
+      background: linear-gradient(180deg, #18100c 0%, #291a13 50%, #18100c 100%);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Soft pulse animations for note markers */
+    @keyframes pulse-subtle {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.9; }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 2s infinite ease-in-out;
+    }
+
+    @keyframes ring-glow {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    .root-glow {
+      animation: ring-glow 2s infinite;
+    }
+
+    /* Custom string textures */
+    .guitar-string {
+      position: absolute;
+      left: 0;
+      right: 0;
+      background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 50%, #64748b 100%);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+      z-index: 10;
+    }
+
+    .fret-wire {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(90deg, #cbd5e1 0%, #f8fafc 40%, #64748b 100%);
+      box-shadow: 1px 0 3px rgba(0,0,0,0.4);
+      z-index: 5;
+    }
+
+    .nut-bar {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 8px;
+      background: linear-gradient(90deg, #fef3c7 0%, #fde68a 100%);
+      box-shadow: 2px 0 5px rgba(0,0,0,0.6);
+      z-index: 12;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col justify-between antialiased">
+
+  <!-- HEADER & NAVIGATION -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+      <!-- Logo & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+          <i class="fa-solid fa-guitar text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight tracking-tight text-white flex items-center gap-2">
+            GuitarIntervals <span class="text-xs bg-indigo-500/20 text-indigo-400 font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">PRO</span>
+          </h1>
+          <p class="text-xs text-slate-400">Allenatore di Intervalli per Chitarra</p>
+        </div>
+      </div>
+
+      <!-- Mode Selector -->
+      <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+        <button id="btn-mode-quiz" onclick="setAppMode('quiz')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 bg-indigo-600 text-white shadow-md">
+          <i class="fa-solid fa-graduation-cap mr-1.5"></i>Modalità Quiz
+        </button>
+        <button id="btn-mode-explore" onclick="setAppMode('explore')" class="px-4 py-1.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all duration-200">
+          <i class="fa-solid fa-compass mr-1.5"></i>Esplora & Studio
+        </button>
+      </div>
+
+      <!-- Controls / Options -->
+      <div class="flex items-center space-x-3">
+        <!-- Audio Volume Toggle -->
+        <button id="btn-sound" onclick="toggleMute()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition" title="Attiva/Disattiva Audio">
+          <i id="icon-sound" class="fa-solid fa-volume-high"></i>
+        </button>
+        <!-- Settings Modal Toggle -->
+        <button onclick="toggleModal('modal-settings')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition" title="Impostazioni">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow flex flex-col gap-6 w-full">
+
+    <!-- STATS & QUIZ HEADER PANEL -->
+    <div id="quiz-stats-panel" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 sm:p-4 flex items-center justify-between">
+        <div>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Punteggio</span>
+          <span id="stat-score" class="text-2xl font-extrabold text-indigo-400">0</span>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 sm:p-4 flex items-center justify-between">
+        <div>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Serie Attuale</span>
+          <span id="stat-streak" class="text-2xl font-extrabold text-amber-400">0 🔥</span>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+          <i class="fa-solid fa-fire"></i>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 sm:p-4 flex items-center justify-between">
+        <div>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Accuratezza</span>
+          <span id="stat-accuracy" class="text-2xl font-extrabold text-emerald-400">--%</span>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 sm:p-4 flex items-center justify-between">
+        <div>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Livello / Range</span>
+          <span id="stat-range-label" class="text-sm font-bold text-slate-200 mt-1 block">Entro Ottava (12)</span>
+        </div>
+        <button onclick="toggleModal('modal-settings')" class="text-xs text-indigo-400 hover:text-indigo-300 underline font-medium">
+          Cambia
+        </button>
+      </div>
+    </div>
+
+    <!-- EXPLORE MODE INSTRUCTION BAR (Hidden by default) -->
+    <div id="explore-info-panel" class="hidden bg-indigo-950/40 border border-indigo-800/60 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-indigo-200">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-circle-info text-xl text-indigo-400"></i>
+        <p class="text-sm">
+          <strong>Modalità Esplorazione:</strong> Clicca su qualsiasi nota sul manico per impostarla come <span class="text-red-400 font-bold">Radice (R)</span>. Tutta la tastiera mostrerà gli intervalli calcolati in tempo reale rispetto a quella nota!
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <label class="text-xs text-slate-300 font-medium whitespace-nowrap">Mostra su note:</label>
+        <select id="select-explore-display" onchange="renderFretboard()" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-2 text-white font-medium">
+          <option value="interval">Nome Intervallo (es. M3, P5)</option>
+          <option value="note">Nome Nota (es. Do, Mi, Sol)</option>
+          <option value="semitones">Distanza Semitoni (+4, +7)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- GUITAR FRETBOARD DISPLAY -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-2xl relative overflow-hidden">
+      <!-- Fretboard Header Controls -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-2">
+          <span class="inline-block w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+          <h2 class="font-bold text-sm sm:text-base text-slate-200 uppercase tracking-wider">Manico della Chitarra</h2>
+          <span id="tuning-badge" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">Standard (E A D G B E)</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Audio Playback Buttons for current quiz interval -->
+          <div id="audio-playback-controls" class="flex items-center space-x-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <button onclick="playRootAudio()" class="px-2.5 py-1 text-xs font-semibold bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg border border-red-500/30 transition flex items-center gap-1.5" title="Suona nota Radice">
+              <i class="fa-solid fa-play"></i> Radice
+            </button>
+            <button onclick="playTargetAudio()" class="px-2.5 py-1 text-xs font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg border border-amber-500/30 transition flex items-center gap-1.5" title="Suona nota Target">
+              <i class="fa-solid fa-play"></i> Target
+            </button>
+            <button onclick="playIntervalHarmonic()" class="px-2.5 py-1 text-xs font-semibold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 rounded-lg border border-indigo-500/30 transition flex items-center gap-1.5" title="Suona insieme">
+              <i class="fa-solid fa-music"></i> Insieme
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fretboard Scrollable Container -->
+      <div class="overflow-x-auto pb-4 pt-2 -mx-2 px-2">
+        <div id="fretboard-container" class="fretboard-bg min-w-[850px] sm:min-w-[1000px] rounded-xl relative border-y-4 border-slate-800 py-3 selection:bg-transparent">
+          <!-- Fretboard rendered dynamically via JS -->
+        </div>
+      </div>
+
+      <!-- Fretboard Legend -->
+      <div class="flex flex-wrap items-center justify-between text-xs text-slate-400 mt-3 pt-3 border-t border-slate-800/80 gap-3">
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center gap-1.5">
+            <span class="w-3.5 h-3.5 rounded-full bg-red-500 border border-white inline-block shadow-sm"></span>
+            <span class="font-medium text-slate-300">Nota Radice (R)</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span id="target-legend-dot" class="w-3.5 h-3.5 rounded-full bg-amber-400 border border-white inline-block shadow-sm"></span>
+            <span id="target-legend-label" class="font-medium text-slate-300">Nota Target (?)</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500">I tasti 3, 5, 7, 9, 12, 15, 17, 19, 21 presentano i segnatasti (intarsi).</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZ INTERACTION PANEL -->
+    <div id="quiz-interaction-panel" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col gap-5">
+      
+      <!-- Question Prompt Header -->
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+        <div>
+          <h3 class="font-bold text-lg text-white flex items-center gap-2">
+            <span>Che intervallo è rappresentato sul manico?</span>
+          </h3>
+          <p class="text-xs text-slate-400 mt-0.5">Seleziona il nome dell'intervallo tra la nota Radice rossa e la nota Target dorata.</p>
+        </div>
+        <div id="prompt-notes-info" class="text-xs font-mono bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 text-slate-300 flex items-center gap-2">
+          <!-- E.g. Root: C3 | Target: G3 -->
+          <span id="info-root-name">Radice: --</span>
+          <span class="text-slate-600">|</span>
+          <span id="info-target-name">Target: ?</span>
+        </div>
+      </div>
+
+      <!-- Feedback Banner (Hidden by default until user answers) -->
+      <div id="feedback-banner" class="hidden rounded-xl p-4 transition-all duration-300 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <div id="feedback-icon" class="text-2xl mt-0.5"></div>
+          <div>
+            <h4 id="feedback-title" class="font-bold text-base"></h4>
+            <p id="feedback-detail" class="text-xs sm:text-sm opacity-90 mt-0.5"></p>
+          </div>
+        </div>
+        <button id="btn-next-question" onclick="nextQuestion()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-sm bg-white text-slate-950 hover:bg-slate-200 transition shadow-lg shrink-0 flex items-center justify-center gap-2">
+          Prossima Domanda <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+      <!-- Intervals Selection Grid -->
+      <div class="space-y-3">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Scegli l'intervallo:</span>
+        <div id="interval-buttons-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
+          <!-- Interval buttons generated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- INTERVAL REFERENCE CHEAT SHEET (Accordion / Reference) -->
+    <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 sm:p-5">
+      <details class="group">
+        <summary class="flex justify-between items-center font-bold text-sm text-slate-300 cursor-pointer list-none">
+          <span class="flex items-center gap-2">
+            <i class="fa-solid fa-book-open text-indigo-400"></i>
+            Guida Rapida agli Intervalli e Semitoni
+          </span>
+          <span class="transition group-open:rotate-180">
+            <i class="fa-solid fa-chevron-down text-slate-500"></i>
+          </span>
+        </summary>
+        <div class="mt-4 pt-4 border-t border-slate-800/80 text-xs grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 text-slate-300">
+          <div class="p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+            <span class="font-bold text-indigo-400 block">Unisono (P1)</span>
+            <span class="text-slate-400">0 Semitoni</span>
+          </div>
+          <div class="p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+            <span class="font-bold text-sky-400 block">2ª Minore (m2)</span>
+            <span class="text-slate-400">1 Semitono</span>
+          </div>
+          <div class="p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+            <span class="font-bold text-sky-400 block">2ª Maggiore (M2)</span>
+            <span class="text-slate-400">2 Semitoni</span>
+          </div>
+          <div class="p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+            <span class="font-bold text-emerald-400 block">3ª Minore (m3)</span>
+            <span class="text-slate-400">3 Semitoni</span>
+          </div>
+          <div class="p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+            <span class="font-bold text-emerald-400 block">3ª Maggiore (M3)</span>
+            <span class="text-slate-400">4 Semitoni</span>
+          </div>
+          <div class="p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+            <span class="font-bold text-indigo-400 block">4ª Giusta (P4)</span>
+            <span class="text-slate-400">5 Semitoni</span>
+          </div>
+          <div class="p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+            <span class="font-bold text-rose-400 block">Tritono (TT / 5b)</span>
+            <span class="text-slate-400">6 Semitoni</span>
+          </div>
+          <div class="p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+            <span class="font-bold text-indigo-400 block">5ª Giusta (P5)</span>
+            <span class="text-slate-400">7 Semitoni</span>
+          </div>
+          <div class="p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+            <span class="font-bold text-amber-400 block">6ª Minore (m6)</span>
+            <span class="text-slate-400">8 Semitoni</span>
+          </div>
+          <div class="p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+            <span class="font-bold text-amber-400 block">6ª Maggiore (M6)</span>
+            <span class="text-slate-400">9 Semitoni</span>
+          </div>
+          <div class="p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+            <span class="font-bold text-purple-400 block">7ª Minore (m7)</span>
+            <span class="text-slate-400">10 Semitoni</span>
+          </div>
+          <div class="p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+            <span class="font-bold text-purple-400 block">7ª Maggiore (M7)</span>
+            <span class="text-slate-400">11 Semitoni</span>
+          </div>
+          <div class="p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+            <span class="font-bold text-indigo-400 block">Ottava (P8)</span>
+            <span class="text-slate-400">12 Semitoni</span>
+          </div>
+        </div>
+      </details>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-900 border-t border-slate-800 py-4 mt-6">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+      <p>Guitar Intervals Master • Uno strumento interattivo per chitarristi di ogni livello.</p>
+    </div>
+  </footer>
+
+  <!-- MODAL: SETTINGS -->
+  <div id="modal-settings" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-lg text-white flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-indigo-400"></i> Impostazioni Quiz & Chitarra
+        </h3>
+        <button onclick="toggleModal('modal-settings')" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Settings Form -->
+      <div class="space-y-4 text-sm">
+        <!-- Accordatura -->
+        <div>
+          <label class="block font-medium text-slate-300 mb-1.5">Accordatura Chitarra:</label>
+          <select id="setting-tuning" onchange="updateSettings()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:ring-2 focus:ring-indigo-500 outline-none">
+            <option value="standard">Standard (E A D G B E)</option>
+            <option value="drop_d">Drop D (D A D G B E)</option>
+            <option value="half_step">Mezzo Tasso Sotto (Eb Ab Db Gb Bb Eb)</option>
+            <option value="open_d">Aperta in RE / Open D (D A D F# A D)</option>
+            <option value="open_g">Aperta in SOL / Open G (D G D G B D)</option>
+          </select>
+        </div>
+
+        <!-- Numero Tasti -->
+        <div>
+          <label class="block font-medium text-slate-300 mb-1.5">Numero Tasti Visibili:</label>
+          <select id="setting-frets" onchange="updateSettings()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:ring-2 focus:ring-indigo-500 outline-none">
+            <option value="12">12 Tasti</option>
+            <option value="15" selected>15 Tasti (Consigliato)</option>
+            <option value="21">21 Tasti</option>
+            <option value="24">24 Tasti</option>
+          </select>
+        </div>
+
+        <!-- Range Intervalli Quiz -->
+        <div>
+          <label class="block font-medium text-slate-300 mb-1.5">Range di Intervalli nel Quiz:</label>
+          <select id="setting-range" onchange="updateSettings()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:ring-2 focus:ring-indigo-500 outline-none">
+            <option value="simple">Intervalli Semplici (Entro l'ottava: 0 - 12 semitoni)</option>
+            <option value="compound">Include Intervalli Composti (Nona, Decima: fino a 16 semitoni)</option>
+            <option value="basic">Solo Intervalli Base (2ª, 3ª, 4ª, 5ª, Ottava)</option>
+          </select>
+        </div>
+
+        <!-- Posizione Nota Radice -->
+        <div>
+          <label class="block font-medium text-slate-300 mb-1.5">Posizione Nota Radice:</label>
+          <select id="setting-root-constraint" onchange="updateSettings()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:ring-2 focus:ring-indigo-500 outline-none">
+            <option value="any">Ovunque sul manico (Avanzato)</option>
+            <option value="string6">Sempre sulla 6ª Corda (Semplice)</option>
+          </select>
+        </div>
+
+        <!-- Riproduzione Audio Automatica -->
+        <div class="flex items-center justify-between pt-2">
+          <span class="font-medium text-slate-300">Suona intervallo all'inizio di ogni domanda</span>
+          <input type="checkbox" id="setting-autoplay" checked onchange="updateSettings()" class="w-5 h-5 accent-indigo-600 rounded cursor-pointer">
+        </div>
+
+        <!-- Mostra nomi delle note sul quiz -->
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="font-medium text-slate-300 block">Mostra nome nota Radice</span>
+            <span class="text-xs text-slate-500">Aiuta i principianti a identificare le note</span>
+          </div>
+          <input type="checkbox" id="setting-shownotenames" checked onchange="updateSettings()" class="w-5 h-5 accent-indigo-600 rounded cursor-pointer">
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="toggleModal('modal-settings')" class="w-full py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-lg">
+          Salva e Chiudi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ===================================================================
+       MUSIC THEORY DATA & CONSTANTS
+       =================================================================== */
+    const NOTE_NAMES_IT = ['DO', 'DO♯', 'RE', 'RE♯', 'MI', 'FA', 'FA♯', 'SOL', 'SOL♯', 'LA', 'LA♯', 'SI'];
+    const NOTE_NAMES_EN = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+    // List of Interval Definitions
+    const INTERVALS_DATA = [
+      { semitones: 0,  short: 'P1', name: 'Unisono Giusto', category: 'Giusta', color: 'indigo' },
+      { semitones: 1,  short: 'm2', name: 'Seconda Minore', category: 'Minore', color: 'sky' },
+      { semitones: 2,  short: 'M2', name: 'Seconda Maggiore', category: 'Maggiore', color: 'sky' },
+      { semitones: 3,  short: 'm3', name: 'Terza Minore', category: 'Minore', color: 'emerald' },
+      { semitones: 4,  short: 'M3', name: 'Terza Maggiore', category: 'Maggiore', color: 'emerald' },
+      { semitones: 5,  short: 'P4', name: 'Quarta Giusta', category: 'Giusta', color: 'indigo' },
+      { semitones: 6,  short: 'TT', name: 'Tritono (4ª Ecc / 5ª Dim)', category: 'Tritono', color: 'rose' },
+      { semitones: 7,  short: 'P5', name: 'Quinta Giusta', category: 'Giusta', color: 'indigo' },
+      { semitones: 8,  short: 'm6', name: 'Sesta Minore', category: 'Minore', color: 'amber' },
+      { semitones: 9,  short: 'M6', name: 'Sesta Maggiore', category: 'Maggiore', color: 'amber' },
+      { semitones: 10, short: 'm7', name: 'Settima Minore', category: 'Minore', color: 'purple' },
+      { semitones: 11, short: 'M7', name: 'Settima Maggiore', category: 'Maggiore', color: 'purple' },
+      { semitones: 12, short: 'P8', name: 'Ottava', category: 'Giusta', color: 'indigo' },
+      { semitones: 13, short: 'm9', name: 'Nona Minore', category: 'Composta', color: 'teal' },
+      { semitones: 14, short: 'M9', name: 'Nona Maggiore', category: 'Composta', color: 'teal' },
+      { semitones: 15, short: 'm10', name: 'Decima Minore', category: 'Composta', color: 'teal' },
+      { semitones: 16, short: 'M10', name: 'Decima Maggiore', category: 'Composta', color: 'teal' },
+    ];
+
+    // Tunings (String 6 to String 1 MIDI base pitches)
+    // String 1 is high E (E4 = MIDI 64), String 6 is low E (E2 = MIDI 40)
+    const TUNINGS = {
+      standard: { name: 'Standard', strings: [64, 59, 55, 50, 45, 40] }, // E4, B3, G3, D3, A2, E2
+      drop_d:   { name: 'Drop D',   strings: [64, 59, 55, 50, 45, 38] }, // E4, B3, G3, D3, A2, D2
+      half_step:{ name: 'Mezzo Tono Sotto', strings: [63, 58, 54, 49, 44, 39] },
+      open_d:   { name: 'Open D',   strings: [62, 57, 54, 50, 45, 38] },
+      open_g:   { name: 'Open G',   strings: [62, 59, 55, 50, 43, 38] }
+    };
+
+    /* ===================================================================
+       APP STATE
+       =================================================================== */
+    let state = {
+      mode: 'quiz', // 'quiz' or 'explore'
+      tuningKey: 'standard',
+      fretCount: 15,
+      range: 'simple', // 'simple', 'compound', 'basic'
+      rootConstraint: 'any', // 'any', 'string6'
+      autoPlay: true,
+      showRootNoteName: true,
+      soundMuted: false,
+
+      // Stats
+      score: 0,
+      streak: 0,
+      totalQuestions: 0,
+      correctQuestions: 0,
+
+      // Active Quiz Question Data
+      quiz: {
+        root: { stringIdx: 4, fret: 3, midi: 48 }, // e.g. C3 on A string fret 3
+        target: { stringIdx: 3, fret: 2, midi: 52 }, // e.g. E3 on D string fret 2
+        interval: null, // Interval obj
+        answered: false,
+        selectedAnswer: null
+      },
+
+      // Explore Mode Data
+      explore: {
+        root: { stringIdx: 4, fret: 3, midi: 48 }, // Selected Root for explore
+        displayType: 'interval' // 'interval', 'note', 'semitones'
+      }
+    };
+
+    /* ===================================================================
+       WEB AUDIO SYNTHESIZER (PLUCKED GUITAR SOUND)
+       =================================================================== */
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function midiToFreq(midi) {
+      return 440 * Math.pow(2, (midi - 69) / 12);
+    }
+
+    // Synthesize realistic acoustic/electric pluck tone using oscillators + filter decay
+    function playNoteSound(midi, delay = 0, duration = 2.2) {
+      if (state.soundMuted) return;
+
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime + delay;
+        const freq = midiToFreq(midi);
+
+        // Fundamental Oscillator (Triangle wave for warmth)
+        const osc1 = ctx.createOscillator();
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(freq, now);
+
+        // Harmonic Oscillator (Sawtooth for string bite)
+        const osc2 = ctx.createOscillator();
+        osc2.type = 'sawtooth';
+        osc2.frequency.setValueAtTime(freq, now);
+
+        // Lowpass Filter for natural string pluck dampening
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        // Higher frequencies start bright then damp quickly
+        filter.frequency.setValueAtTime(freq * 5, now);
+        filter.frequency.exponentialRampToValueAtTime(Math.max(freq, 80), now + duration * 0.8);
+
+        // Gain envelope
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.45, now + 0.015); // Fast attack
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration); // Smooth pluck decay
+
+        // Mix oscillators
+        const mixGain = ctx.createGain();
+        mixGain.gain.value = 0.5;
+        osc1.connect(filter);
+        osc2.connect(mixGain);
+        mixGain.connect(filter);
+
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + duration);
+        osc2.stop(now + duration);
+      } catch (e) {
+        console.error("Audio Playback Error:", e);
+      }
+    }
+
+    function playRootAudio() {
+      const midi = (state.mode === 'quiz') ? state.quiz.root.midi : state.explore.root.midi;
+      playNoteSound(midi, 0);
+    }
+
+    function playTargetAudio() {
+      if (state.mode === 'quiz') {
+        playNoteSound(state.quiz.target.midi, 0);
+      }
+    }
+
+    function playIntervalHarmonic() {
+      if (state.mode === 'quiz') {
+        playNoteSound(state.quiz.root.midi, 0);
+        playNoteSound(state.quiz.target.midi, 0.02); // Small micro-delay for realistic guitar strum
+      }
+    }
+
+    function playIntervalSequence() {
+      if (state.mode === 'quiz') {
+        playNoteSound(state.quiz.root.midi, 0);
+        playNoteSound(state.quiz.target.midi, 0.6);
+      }
+    }
+
+    function toggleMute() {
+      state.soundMuted = !state.soundMuted;
+      const icon = document.getElementById('icon-sound');
+      const btn = document.getElementById('btn-sound');
+      if (state.soundMuted) {
+        icon.className = 'fa-solid fa-volume-xmark text-red-400';
+        btn.classList.add('border', 'border-red-500/40');
+      } else {
+        icon.className = 'fa-solid fa-volume-high text-slate-300';
+        btn.classList.remove('border', 'border-red-500/40');
+      }
+    }
+
+    /* ===================================================================
+       FRETBOARD RENDERER
+       =================================================================== */
+    function renderFretboard() {
+      const container = document.getElementById('fretboard-container');
+      const tuning = TUNINGS[state.tuningKey].strings; // Array of 6 MIDI notes
+      const numFrets = parseInt(state.fretCount, 10);
+
+      let html = '';
+
+      // Render Fret Markers / Inlay Dots (Frets 3, 5, 7, 9, 12, 15, 17, 19, 21, 24)
+      const singleInlays = [3, 5, 7, 9, 15, 17, 19, 21];
+      const doubleInlays = [12, 24];
+
+      html += `<div class="absolute inset-0 pointer-events-none flex">`;
+      // Fret 0 (Nut) width spacer
+      html += `<div class="w-12 border-r-4 border-amber-200/40 bg-slate-950/40 shrink-0 relative"></div>`;
+
+      for (let f = 1; f <= numFrets; f++) {
+        const isDouble = doubleInlays.includes(f);
+        const isSingle = singleInlays.includes(f);
+
+        html += `<div class="flex-1 border-r border-slate-600/70 relative flex items-center justify-center">`;
+        if (isSingle) {
+          html += `<div class="w-3.5 h-3.5 rounded-full bg-slate-400/20 border border-slate-300/30"></div>`;
+        } else if (isDouble) {
+          html += `<div class="flex flex-col space-y-8">
+            <div class="w-3 h-3 rounded-full bg-slate-400/25 border border-slate-300/30"></div>
+            <div class="w-3 h-3 rounded-full bg-slate-400/25 border border-slate-300/30"></div>
+          </div>`;
+        }
+        // Fret Number Label at top
+        html += `<span class="absolute -bottom-1 text-[10px] font-mono text-slate-500 font-semibold">${f}</span>`;
+        html += `</div>`;
+      }
+      html += `</div>`;
+
+      // Render Strings and Frets
+      html += `<div class="relative z-20 flex flex-col justify-between space-y-3 py-2">`;
+
+      for (let sIdx = 0; sIdx < 6; sIdx++) {
+        const stringMidiBase = tuning[sIdx];
+        const stringGauge = 1 + (sIdx * 0.45); // Visual thickness for guitar strings (String 6 is thickest)
+
+        html += `<div class="relative flex items-center h-8">`;
+        
+        // String wire overlay
+        html += `<div class="guitar-string" style="height: ${stringGauge}px;"></div>`;
+
+        // String Nut / Fret 0 Button
+        for (let fret = 0; fret <= numFrets; fret++) {
+          const noteMidi = stringMidiBase + fret;
+          const noteNameObj = getNoteName(noteMidi);
+
+          const isRoot = isNoteRoot(sIdx, fret);
+          const isTarget = isNoteTarget(sIdx, fret);
+
+          // Container cell classes
+          let cellWidthClass = (fret === 0) ? 'w-12 shrink-0' : 'flex-1';
+          
+          html += `<div class="${cellWidthClass} relative flex items-center justify-center h-full z-30">`;
+
+          // Decide dot badge styling and text
+          if (state.mode === 'quiz') {
+            if (isRoot) {
+              const displayLabel = state.showRootNoteName ? noteNameObj.it : 'R';
+              html += `<button onclick="playRootAudio()" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-600 text-white font-bold text-xs flex items-center justify-center border-2 border-white shadow-lg shadow-red-500/50 root-glow z-40 transition transform hover:scale-110" title="Radice: ${noteNameObj.it}">
+                ${displayLabel}
+              </button>`;
+            } else if (isTarget) {
+              if (state.quiz.answered) {
+                // Show actual note or interval name after quiz answer
+                html += `<button onclick="playTargetAudio()" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-slate-950 font-extrabold text-xs flex items-center justify-center border-2 border-white shadow-lg shadow-amber-400/50 z-40 animate-bounce" title="Target: ${noteNameObj.it}">
+                  ${state.quiz.interval.short}
+                </button>`;
+              } else {
+                // Hidden target question mark
+                html += `<button onclick="playTargetAudio()" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-slate-950 font-extrabold text-xs flex items-center justify-center border-2 border-white shadow-lg shadow-amber-400/50 z-40 transition transform hover:scale-110 animate-pulse-subtle" title="Target da Indovinare">
+                  ?
+                </button>`;
+              }
+            }
+          } else if (state.mode === 'explore') {
+            // Explore mode
+            if (isRoot) {
+              html += `<button onclick="setExploreRoot(${sIdx}, ${fret})" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-600 text-white font-bold text-xs flex items-center justify-center border-2 border-white shadow-lg shadow-red-500/50 z-40" title="Radice Corrente">
+                R
+              </button>`;
+            } else {
+              // Calculate interval relative to explore root
+              const rootMidi = state.explore.root.midi;
+              const diffSemitones = noteMidi - rootMidi;
+
+              // Highlight matching interval if within 0..16 semitones
+              const intervalObj = INTERVALS_DATA.find(i => i.semitones === diffSemitones);
+
+              if (intervalObj) {
+                let badgeLabel = '';
+                const displayType = document.getElementById('select-explore-display')?.value || 'interval';
+                if (displayType === 'note') badgeLabel = noteNameObj.it;
+                else if (displayType === 'semitones') badgeLabel = `+${diffSemitones}`;
+                else badgeLabel = intervalObj.short;
+
+                const colorBg = getCategoryBgColor(intervalObj.category);
+
+                html += `<button onclick="playExploreNote(${sIdx}, ${fret}, ${noteMidi})" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full ${colorBg} text-white font-bold text-[10px] flex items-center justify-center border border-slate-200/60 shadow transition transform hover:scale-125 z-30" title="${noteNameObj.it} - ${intervalObj.name}">
+                  ${badgeLabel}
+                </button>`;
+              } else {
+                // Subtle click target for any fret in explore mode
+                html += `<button onclick="setExploreRoot(${sIdx}, ${fret})" class="w-5 h-5 rounded-full bg-slate-800/40 hover:bg-slate-700/80 text-slate-400 text-[9px] flex items-center justify-center opacity-0 hover:opacity-100 transition">
+                  ${noteNameObj.it}
+                </button>`;
+              }
+            }
+          }
+
+          html += `</div>`;
+        }
+
+        html += `</div>`;
+      }
+
+      html += `</div>`;
+
+      container.innerHTML = html;
+    }
+
+    function getNoteName(midi) {
+      const index = (midi % 12 + 12) % 12;
+      return { it: NOTE_NAMES_IT[index], en: NOTE_NAMES_EN[index] };
+    }
+
+    function isNoteRoot(stringIdx, fret) {
+      if (state.mode === 'quiz') {
+        return state.quiz.root.stringIdx === stringIdx && state.quiz.root.fret === fret;
+      } else {
+        return state.explore.root.stringIdx === stringIdx && state.explore.root.fret === fret;
+      }
+    }
+
+    function isNoteTarget(stringIdx, fret) {
+      if (state.mode === 'quiz') {
+        return state.quiz.target.stringIdx === stringIdx && state.quiz.target.fret === fret;
+      }
+      return false;
+    }
+
+    function getCategoryBgColor(category) {
+      switch (category) {
+        case 'Giusta': return 'bg-indigo-600 hover:bg-indigo-500';
+        case 'Minore': return 'bg-sky-600 hover:bg-sky-500';
+        case 'Maggiore': return 'bg-emerald-600 hover:bg-emerald-500';
+        case 'Tritono': return 'bg-rose-600 hover:bg-rose-500';
+        case 'Composta': return 'bg-purple-600 hover:bg-purple-500';
+        default: return 'bg-slate-600';
+      }
+    }
+
+    /* ===================================================================
+       QUIZ GENERATION & LOGIC
+       =================================================================== */
+    function generateNewQuizQuestion() {
+      state.quiz.answered = false;
+      state.quiz.selectedAnswer = null;
+
+      const tuning = TUNINGS[state.tuningKey].strings;
+      const numFrets = parseInt(state.fretCount, 10);
+
+      // Determine candidate interval semitones range
+      let allowedIntervals = INTERVALS_DATA;
+      if (state.range === 'simple') {
+        allowedIntervals = INTERVALS_DATA.filter(i => i.semitones <= 12);
+      } else if (state.range === 'basic') {
+        allowedIntervals = INTERVALS_DATA.filter(i => [0, 2, 4, 5, 7, 9, 11, 12].includes(i.semitones));
+      }
+
+      // Randomly pick an interval from allowed set
+      const targetInterval = allowedIntervals[Math.floor(Math.random() * allowedIntervals.length)];
+      state.quiz.interval = targetInterval;
+
+      // Pick Root position on fretboard that allows target to be placed reasonably
+      let validPairFound = false;
+      let rootCandidate, targetCandidate;
+
+      let attempts = 0;
+      while (!validPairFound && attempts < 200) {
+        attempts++;
+        // Seleziona la corda della radice in base alle impostazioni. La 6a corda corrisponde all'indice 5.
+        const rStringIdx = state.rootConstraint === 'string6' ? 5 : Math.floor(Math.random() * 6);
+        const rFret = Math.floor(Math.random() * (numFrets - 3)); // Stay within lower/mid neck for comfortable roots
+        const rMidi = tuning[rStringIdx] + rFret;
+
+        const targetMidi = rMidi + targetInterval.semitones;
+
+        // Find string/fret combinations that give targetMidi
+        const possibleTargets = [];
+        for (let tStringIdx = 0; tStringIdx < 6; tStringIdx++) {
+          const tFret = targetMidi - tuning[tStringIdx];
+          // Keep quiz note positions realistic for a guitarist (close frets or adjacent strings)
+          if (tFret >= 0 && tFret <= numFrets) {
+            const stringDiff = Math.abs(tStringIdx - rStringIdx);
+            const fretDiff = Math.abs(tFret - rFret);
+            // Guitaristic constraint: target should be within 4 strings and 5 frets reach
+            if (stringDiff <= 3 && fretDiff <= 5) {
+              possibleTargets.push({ stringIdx: tStringIdx, fret: tFret, midi: targetMidi });
+            }
+          }
+        }
+
+        if (possibleTargets.length > 0) {
+          rootCandidate = { stringIdx: rStringIdx, fret: rFret, midi: rMidi };
+          targetCandidate = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
+          validPairFound = true;
+        }
+      }
+
+      state.quiz.root = rootCandidate;
+      state.quiz.target = targetCandidate;
+
+      // Update Header Info
+      const rootNoteObj = getNoteName(rootCandidate.midi);
+      const targetNoteObj = getNoteName(targetCandidate.midi);
+
+      document.getElementById('info-root-name').innerText = `Radice: ${rootNoteObj.it} (Corda ${6 - rootCandidate.stringIdx}, Tasto ${rootCandidate.fret})`;
+      document.getElementById('info-target-name').innerText = `Target: ? (Corda ${6 - targetCandidate.stringIdx}, Tasto ${targetCandidate.fret})`;
+
+      // Hide Feedback Banner
+      const feedback = document.getElementById('feedback-banner');
+      feedback.classList.add('hidden');
+
+      // Re-render UI
+      renderIntervalButtons();
+      renderFretboard();
+
+      // Auto play audio if enabled
+      if (state.autoPlay && !state.soundMuted) {
+        setTimeout(() => {
+          playIntervalSequence();
+        }, 300);
+      }
+    }
+
+    function renderIntervalButtons() {
+      const container = document.getElementById('interval-buttons-grid');
+      let allowedIntervals = INTERVALS_DATA;
+      if (state.range === 'simple') {
+        allowedIntervals = INTERVALS_DATA.filter(i => i.semitones <= 12);
+      } else if (state.range === 'basic') {
+        allowedIntervals = INTERVALS_DATA.filter(i => [0, 2, 4, 5, 7, 9, 11, 12].includes(i.semitones));
+      }
+
+      let html = '';
+      allowedIntervals.forEach(item => {
+        const isCorrect = item.semitones === state.quiz.interval.semitones;
+        let btnStyle = 'bg-slate-800 hover:bg-slate-700 text-slate-100 border-slate-700';
+
+        if (state.quiz.answered) {
+          if (isCorrect) {
+            btnStyle = 'bg-emerald-600 text-white border-emerald-400 ring-2 ring-emerald-400';
+          } else if (state.quiz.selectedAnswer === item.semitones) {
+            btnStyle = 'bg-rose-600 text-white border-rose-400';
+          } else {
+            btnStyle = 'bg-slate-900 text-slate-600 border-slate-800 opacity-40';
+          }
+        }
+
+        html += `<button 
+          onclick="handleAnswerSelection(${item.semitones})" 
+          ${state.quiz.answered ? 'disabled' : ''}
+          class="p-3 rounded-xl border text-left transition-all duration-200 flex flex-col justify-between h-20 shadow-md ${btnStyle}">
+          <div class="flex items-center justify-between w-full">
+            <span class="font-extrabold text-base">${item.short}</span>
+            <span class="text-[10px] font-mono opacity-75">${item.semitones} semiton${item.semitones === 1 ? 'o' : 'i'}</span>
+          </div>
+          <span class="text-xs font-medium line-clamp-1 opacity-90">${item.name}</span>
+        </button>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function handleAnswerSelection(selectedSemitones) {
+      if (state.quiz.answered) return;
+
+      state.quiz.answered = true;
+      state.quiz.selectedAnswer = selectedSemitones;
+      state.totalQuestions++;
+
+      const isCorrect = selectedSemitones === state.quiz.interval.semitones;
+      const feedbackBanner = document.getElementById('feedback-banner');
+      const feedbackIcon = document.getElementById('feedback-icon');
+      const feedbackTitle = document.getElementById('feedback-title');
+      const feedbackDetail = document.getElementById('feedback-detail');
+
+      const rootNoteObj = getNoteName(state.quiz.root.midi);
+      const targetNoteObj = getNoteName(state.quiz.target.midi);
+
+      // Reveal target note in header
+      document.getElementById('info-target-name').innerText = `Target: ${targetNoteObj.it} (Corda ${6 - state.quiz.target.stringIdx}, Tasto ${state.quiz.target.fret})`;
+
+      if (isCorrect) {
+        state.score += 10;
+        state.streak++;
+        state.correctQuestions++;
+
+        feedbackBanner.className = 'rounded-xl p-4 transition-all duration-300 flex flex-col sm:flex-row items-center justify-between gap-4 bg-emerald-950/80 border border-emerald-600/60 text-emerald-100 shadow-xl';
+        feedbackIcon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+        feedbackTitle.innerText = 'Risposta Corretta! 🎉';
+        feedbackDetail.innerText = `L'intervallo tra ${rootNoteObj.it} e ${targetNoteObj.it} è proprio una ${state.quiz.interval.name} (${state.quiz.interval.semitones} semitoni).`;
+
+        playIntervalHarmonic();
+      } else {
+        state.streak = 0;
+
+        const correctIntervalObj = INTERVALS_DATA.find(i => i.semitones === state.quiz.interval.semitones);
+
+        feedbackBanner.className = 'rounded-xl p-4 transition-all duration-300 flex flex-col sm:flex-row items-center justify-between gap-4 bg-rose-950/80 border border-rose-600/60 text-rose-100 shadow-xl';
+        feedbackIcon.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-400"></i>';
+        feedbackTitle.innerText = 'Risposta Errata!';
+        feedbackDetail.innerText = `La risposta corretta era ${correctIntervalObj.name} (${correctIntervalObj.short} - ${correctIntervalObj.semitones} semitoni).`;
+
+        playIntervalSequence();
+      }
+
+      feedbackBanner.classList.remove('hidden');
+
+      updateStatsUI();
+      renderIntervalButtons();
+      renderFretboard();
+    }
+
+    function nextQuestion() {
+      generateNewQuizQuestion();
+    }
+
+    function updateStatsUI() {
+      document.getElementById('stat-score').innerText = state.score;
+      document.getElementById('stat-streak').innerText = `${state.streak} 🔥`;
+
+      const accuracy = state.totalQuestions > 0 
+        ? Math.round((state.correctQuestions / state.totalQuestions) * 100) 
+        : 0;
+      document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
+    }
+
+    /* ===================================================================
+       EXPLORE / STUDY MODE LOGIC
+       =================================================================== */
+    function setExploreRoot(stringIdx, fret) {
+      const tuning = TUNINGS[state.tuningKey].strings;
+      const midi = tuning[stringIdx] + fret;
+      state.explore.root = { stringIdx, fret, midi };
+
+      playNoteSound(midi, 0);
+      renderFretboard();
+    }
+
+    function playExploreNote(stringIdx, fret, midi) {
+      playNoteSound(midi, 0);
+    }
+
+    function setAppMode(mode) {
+      state.mode = mode;
+
+      const btnQuiz = document.getElementById('btn-mode-quiz');
+      const btnExplore = document.getElementById('btn-mode-explore');
+      const quizInteractionPanel = document.getElementById('quiz-interaction-panel');
+      const quizStatsPanel = document.getElementById('quiz-stats-panel');
+      const exploreInfoPanel = document.getElementById('explore-info-panel');
+      const playbackControls = document.getElementById('audio-playback-controls');
+      const targetLegendDot = document.getElementById('target-legend-dot');
+      const targetLegendLabel = document.getElementById('target-legend-label');
+
+      if (mode === 'quiz') {
+        btnQuiz.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 bg-indigo-600 text-white shadow-md';
+        btnExplore.className = 'px-4 py-1.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all duration-200';
+
+        quizInteractionPanel.classList.remove('hidden');
+        quizStatsPanel.classList.remove('hidden');
+        exploreInfoPanel.classList.add('hidden');
+        playbackControls.classList.remove('hidden');
+        targetLegendDot.classList.remove('hidden');
+        targetLegendLabel.classList.remove('hidden');
+
+        if (!state.quiz.interval) {
+          generateNewQuizQuestion();
+        } else {
+          renderFretboard();
+        }
+      } else {
+        btnExplore.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 bg-indigo-600 text-white shadow-md';
+        btnQuiz.className = 'px-4 py-1.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all duration-200';
+
+        quizInteractionPanel.classList.add('hidden');
+        quizStatsPanel.classList.add('hidden');
+        exploreInfoPanel.classList.remove('hidden');
+        playbackControls.classList.add('hidden');
+        targetLegendDot.classList.add('hidden');
+        targetLegendLabel.classList.add('hidden');
+
+        renderFretboard();
+      }
+    }
+
+    /* ===================================================================
+       MODAL & SETTINGS CONTROLS
+       =================================================================== */
+    function toggleModal(id) {
+      const modal = document.getElementById(id);
+      if (modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      } else {
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+      }
+    }
+
+    function updateSettings() {
+      state.tuningKey = document.getElementById('setting-tuning').value;
+      state.fretCount = document.getElementById('setting-frets').value;
+      state.range = document.getElementById('setting-range').value;
+      state.rootConstraint = document.getElementById('setting-root-constraint').value;
+      state.autoPlay = document.getElementById('setting-autoplay').checked;
+      state.showRootNoteName = document.getElementById('setting-shownotenames').checked;
+
+      // Update badge label
+      document.getElementById('tuning-badge').innerText = `${TUNINGS[state.tuningKey].name}`;
+
+      // Update range label
+      const rangeLabelMap = {
+        simple: "Entro Ottava (12)",
+        compound: "Include Composti (16)",
+        basic: "Base (2ª, 3ª, 4ª, 5ª, 8ª)"
+      };
+      document.getElementById('stat-range-label').innerText = rangeLabelMap[state.range];
+
+      // Re-initialize quiz with new settings
+      if (state.mode === 'quiz') {
+        generateNewQuizQuestion();
+      } else {
+        renderFretboard();
+      }
+    }
+
+    /* ===================================================================
+       INITIALIZATION
+       =================================================================== */
+    window.onload = function() {
+      // Start audio context on first click anywhere
+      document.body.addEventListener('click', function initAudio() {
+        getAudioContext();
+        document.body.removeEventListener('click', initAudio);
+      }, { once: true });
+
+      // Generate first quiz question
+      generateNewQuizQuestion();
+    };
+  </script>
+</body>
+</html>
