@@ -239,7 +239,7 @@
 
       <!-- Fretboard Scrollable Container -->
       <div class="overflow-x-auto pb-4 pt-2 -mx-2 px-2">
-        <div id="fretboard-container" class="fretboard-bg min-w-[850px] sm:min-w-[1000px] rounded-xl relative border-y-4 border-slate-800 py-3 selection:bg-transparent">
+        <div id="fretboard-container" class="fretboard-bg w-full rounded-xl relative border-y-4 border-slate-800 py-3 selection:bg-transparent">
           <!-- Fretboard rendered dynamically via JS -->
         </div>
       </div>
@@ -412,8 +412,9 @@
         <div>
           <label class="block font-medium text-slate-300 mb-1.5">Numero Tasti Visibili:</label>
           <select id="setting-frets" onchange="updateSettings()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:ring-2 focus:ring-indigo-500 outline-none">
+            <option value="6" selected>6 Tasti (Ottimizzato Mobile)</option>
             <option value="12">12 Tasti</option>
-            <option value="15" selected>15 Tasti (Consigliato)</option>
+            <option value="15">15 Tasti</option>
             <option value="21">21 Tasti</option>
             <option value="24">24 Tasti</option>
           </select>
@@ -506,7 +507,7 @@
     let state = {
       mode: 'quiz', // 'quiz' or 'explore'
       tuningKey: 'standard',
-      fretCount: 15,
+      fretCount: 6,
       range: 'simple', // 'simple', 'compound', 'basic'
       rootConstraint: 'any', // 'any', 'string6'
       autoPlay: true,
@@ -651,6 +652,10 @@
       const container = document.getElementById('fretboard-container');
       const tuning = TUNINGS[state.tuningKey].strings; // Array of 6 MIDI notes
       const numFrets = parseInt(state.fretCount, 10);
+
+      // Assicura che la visualizzazione si adatti a schermi piccoli se i tasti sono pochi, ma permetta lo scroll per manici completi
+      const baseWidth = 320;
+      container.style.minWidth = numFrets <= 6 ? '100%' : `${baseWidth + (numFrets - 6) * 45}px`;
 
       let html = '';
 
@@ -834,7 +839,8 @@
         attempts++;
         // Seleziona la corda della radice in base alle impostazioni. La 6a corda corrisponde all'indice 5.
         const rStringIdx = state.rootConstraint === 'string6' ? 5 : Math.floor(Math.random() * 6);
-        const rFret = Math.floor(Math.random() * (numFrets - 3)); // Stay within lower/mid neck for comfortable roots
+        const maxRootFret = Math.max(0, numFrets - 3);
+        const rFret = Math.floor(Math.random() * (maxRootFret + 1)); // Stay within lower/mid neck for comfortable roots
         const rMidi = tuning[rStringIdx] + rFret;
 
         const targetMidi = rMidi + targetInterval.semitones;
